@@ -47,6 +47,35 @@ application {
     mainClass = "org.example.AppSequence"
 }
 
+// Extra task to run the App.kt version without changing the default mainClass
+tasks.register<JavaExec>("runApp") {
+    group = "application"
+    description = "Run App (top-level main)."
+    mainClass.set("org.example.AppKt")
+    classpath = sourceSets["main"].runtimeClasspath
+}
+
+// Extra task to run the AppSequence.kt version without changing the default mainClass
+tasks.register<JavaExec>("runSeq") {
+    group = "application"
+    description = "Run AppSequence (streaming)."
+    mainClass.set("org.example.AppSequence")
+    classpath = sourceSets["main"].runtimeClasspath
+}
+
+// Extra task to run the TURB version without changing the default mainClass
+tasks.register<JavaExec>("runTurb") {
+    group = "application"
+    description = "Run AppSequenceTurb (IntArray + GC events)."
+    mainClass.set("org.example.AppSequenceTurb")
+    classpath = sourceSets["main"].runtimeClasspath
+    // Optional: fix heap size to reduce expansion noise
+    jvmArgs = listOf("-Xms512m", "-Xmx512m")
+    // Allow passing step interval via -PstepInterval=5000 (project property)
+    val step = (project.findProperty("stepInterval") as String?) ?: "10000"
+    args(step)
+}
+
 tasks.named<Test>("test") {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
