@@ -88,18 +88,18 @@ Veja o `build.gradle.kts` do módulo `app` para versões e toolchain (Java 21).
 - Abra o terminal integrado do VS Code na raiz do workspace.
 - Comandos (Windows):
 ```bat
-.\u200bgradlew.bat clean
-.\u200bgradlew.bat build
+.\gradlew.bat clean
+.\gradlew.bat build
 ```
 - Execuções sem trocar `mainClass` (tasks dedicadas no módulo `app`):
 ```bat
-.\u200bgradlew.bat clean runApp   // roda App (top-level main: AppKt)
-.\u200bgradlew.bat clean runSeq   // roda AppSequence (streaming com Sequence)
-.gradlew.bat clean runTurb  // roda AppSequenceTurb (IntArray + GC overlay)
+.\gradlew.bat clean runApp   // roda App (top-level main: AppKt)
+.\gradlew.bat clean runSeq   // roda AppSequence (streaming com Sequence)
+.\gradlew.bat clean runTurb  // roda AppSequenceTurb (IntArray + GC overlay)
 ```
 - Ajustar frequência de amostra (TURB):
 ```bat
-.gradlew.bat runTurb -PstepInterval=5000
+.\gradlew.bat runTurb -PstepInterval=5000
 ```
 - Alternativamente, via `application.mainClass`:
   - Em [app/build.gradle.kts](app/build.gradle.kts), defina `mainClass` para:
@@ -108,7 +108,7 @@ Veja o `build.gradle.kts` do módulo `app` para versões e toolchain (Java 21).
     - `org.example.AppSequenceTurb` (TURB)
   - E rode:
 ```bat
-.gradlew.bat run
+.\gradlew.bat run
 ```
 
 ## Saída e Observabilidade
@@ -130,9 +130,9 @@ Veja o `build.gradle.kts` do módulo `app` para versões e toolchain (Java 21).
 - Formatos aceitos: `1,2,3` ou `1 2 3` ou `1;2;3`.
 - Via propriedade de projeto `-Pobrigatorios`:
 ```bat
-.\u200bgradlew.bat runApp -Pobrigatorios=1,2,3
-.gradlew.bat runSeq -Pobrigatorios=1 2 3
-.gradlew.bat runTurb -Pobrigatorios=1,2,3 -PstepInterval=5000
+.\gradlew.bat runApp -Pobrigatorios=1,2,3
+.\gradlew.bat runSeq -Pobrigatorios=1 2 3
+.\gradlew.bat runTurb -Pobrigatorios=1,2,3 -PstepInterval=5000
 ```
 - Via `--args` (argumentos diretos):
   - `App` e `AppSequence` esperam apenas a lista de obrigatórios:
