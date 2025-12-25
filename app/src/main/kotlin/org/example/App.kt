@@ -10,17 +10,17 @@ import org.knowm.xchart.XYChart
 class App {
     val greeting: String
         get() {
-            return "Gerador de Combinações - Pac Man... memory!"
+            return "Gerador de Combinacoes - Pac Man... memory!"
         }
 }
 
-fun main() {
-    println("Iniciando monitoramento de memória...")
+fun main(args: Array<String>) {
+    println("Iniciando monitoramento de memoria...")
 
     val tempos = mutableListOf<Double>()
     val consumos = mutableListOf<Long>()
 
-    val obrigatorios = setOf(1, 2,)
+    val obrigatorios = parseObrigatoriosFromArgs(args)
 
     // Monitorar por 10 segundos (20 medições de 0,5s)
     for (i in 0..20) {
@@ -29,9 +29,9 @@ fun main() {
 
         // Simulação de trabalho: na metade do tempo gera combinações
         if (i == 10) {
-            println("Gerando combinações...")
+            println("Gerando combinacoes...")
             val jogos = gerarCombinacoesComObrigatorios(obrigatorios)
-            println("Gerados ${jogos.size} jogos que contém os números $obrigatorios.")
+            println("Gerados ${jogos.size} jogos que contem os numeros $obrigatorios.")
         }
 
         Thread.sleep(500) // espera 0,5 segundos
@@ -48,8 +48,8 @@ fun memoriaUsada(): Long {
 }
 
 fun gerarCombinacoesComObrigatorios(obrigatorios: Set<Int>): List<Set<Int>> {
-    require(obrigatorios.all { it in 1..25 }) { "Números fora do intervalo" }
-    require(obrigatorios.size <= 15) { "Máximo de 15 números" }
+    require(obrigatorios.all { it in 1..25 }) { "Numeros fora do intervalo" }
+    require(obrigatorios.size <= 15) { "Maximo de 15 numeros" }
 
     val restante = (1..25).toSet() - obrigatorios
     val faltam = 15 - obrigatorios.size
@@ -74,12 +74,12 @@ fun <T> combinacoes(lista: List<T>, k: Int): List<List<T>> {
 fun plotarGrafico(tempos: List<Double>, consumos: List<Long>) {
     val chart: XYChart = XYChartBuilder()
         .width(800).height(600)
-        .title("Consumo de Memória ao longo do tempo")
+        .title("Consumo de Memoria ao longo do tempo")
         .xAxisTitle("Tempo (s)")
-        .yAxisTitle("Memória (MB)")
+        .yAxisTitle("Memoria (MB)")
         .build()
 
-    chart.addSeries("Uso de Memória", tempos, consumos)
+    chart.addSeries("Uso de Memoria", tempos, consumos)
 
     SwingWrapper(chart).displayChart()
 }

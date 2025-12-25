@@ -53,6 +53,8 @@ tasks.register<JavaExec>("runApp") {
     description = "Run App (top-level main)."
     mainClass.set("org.example.AppKt")
     classpath = sourceSets["main"].runtimeClasspath
+    // Pass 'obrigatorios' via project property, e.g., -Pobrigatorios="1,2,3"
+    (project.findProperty("obrigatorios") as String?)?.let { args(it) }
 }
 
 // Extra task to run the AppSequence.kt version without changing the default mainClass
@@ -61,6 +63,7 @@ tasks.register<JavaExec>("runSeq") {
     description = "Run AppSequence (streaming)."
     mainClass.set("org.example.AppSequence")
     classpath = sourceSets["main"].runtimeClasspath
+    (project.findProperty("obrigatorios") as String?)?.let { args(it) }
 }
 
 // Extra task to run the TURB version without changing the default mainClass
@@ -74,6 +77,8 @@ tasks.register<JavaExec>("runTurb") {
     // Allow passing step interval via -PstepInterval=5000 (project property)
     val step = (project.findProperty("stepInterval") as String?) ?: "10000"
     args(step)
+    // Optional obrigatórios list
+    (project.findProperty("obrigatorios") as String?)?.let { args(it) }
 }
 
 tasks.named<Test>("test") {

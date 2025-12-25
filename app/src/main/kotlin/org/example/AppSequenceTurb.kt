@@ -18,7 +18,7 @@ class AppSequenceTurb {
     private var startNs: Long = 0L
 
     val greeting: String
-        get() = "Iniciando Gerador Combinações TURB (IntArray + GC)..."
+        get() = "Iniciando Gerador Combinacoes TURB (IntArray + GC)..."
 
     companion object {
         @JvmStatic
@@ -26,17 +26,18 @@ class AppSequenceTurb {
             val stepIntervalArg = System.getProperty("stepInterval")?.toIntOrNull()
                 ?: args.firstOrNull()?.toIntOrNull()
                 ?: 10_000
-            AppSequenceTurb().run(stepIntervalArg)
+            val obrigRaw = System.getProperty("obrigatorios") ?: args.drop(1).firstOrNull()
+            AppSequenceTurb().run(stepIntervalArg, obrigRaw)
         }
     }
 
-    fun run(stepInterval: Int) {
+    fun run(stepInterval: Int, obrigRaw: String?) {
         println(greeting)
         registerGcListener()
 
         val tempos = mutableListOf<Double>()
         val consumos = mutableListOf<Long>()
-        val obrigatorios = intArrayOf(1, 2)
+        val obrigatorios = parseObrigatoriosToIntArray(obrigRaw)
 
         startNs = System.nanoTime()
 
@@ -49,16 +50,16 @@ class AppSequenceTurb {
             }
         }
 
-        println("Gerando combinações com obrigatórios ${obrigatorios.joinToString()}...")
+        println("Gerando combinacoes com obrigatorios ${obrigatorios.joinToString()}...")
         val total = gerarCombinacoesComObrigatoriosInt(obrigatorios, ::registrarStep, onCombination = null)
-        println("Gerados $total jogos que contêm os números ${obrigatorios.joinToString()}.")
+        println("Gerados $total jogos que contem os numeros ${obrigatorios.joinToString()}.")
 
         if (gcEvents.isNotEmpty()) {
             println("\nResumo GC (${gcEvents.size} eventos):")
             val totalGcMs = gcEvents.sumOf { it.durationMs }
             println("Tempo total em GC: ${totalGcMs} ms")
             val last = gcEvents.last()
-            println("Último GC: ${last.action} / ${last.cause}, duração ${last.durationMs} ms, heap ${last.usedBeforeMB}MB -> ${last.usedAfterMB}MB")
+            println("Ultimo GC: ${last.action} / ${last.cause}, duracao ${last.durationMs} ms, heap ${last.usedBeforeMB}MB -> ${last.usedAfterMB}MB")
         }
 
         plotarGrafico(tempos, consumos)
@@ -66,14 +67,26 @@ class AppSequenceTurb {
 
     private fun memoriaHeapMB(): Long = memoryMxBean.heapMemoryUsage.used / (1024 * 1024)
 
+    private fun parseObrigatoriosToIntArray(raw: String?): IntArray {
+        val source = raw ?: System.getProperty("obrigatorios")
+        if (source.isNullOrBlank()) return intArrayOf(1, 2)
+        val nums = source.split(',', ' ', ';')
+            .filter { it.isNotBlank() }
+            .map { it.trim().toInt() }
+        require(nums.all { it in 1..25 }) { "Numeros fora do intervalo 1..25" }
+        val unique = nums.toSet()
+        require(unique.size <= 15) { "Maximo de 15 numeros obrigatorios" }
+        return unique.sorted().toIntArray()
+    }
+
     fun gerarCombinacoesComObrigatoriosInt(
         obrigatorios: IntArray,
         onStep: (Int) -> Unit,
         onCombination: ((IntArray) -> Unit)?
     ): Long {
-        require(obrigatorios.all { it in 1..25 }) { "Números fora do intervalo" }
-        require(obrigatorios.distinct().size == obrigatorios.size) { "Obrigatórios repetidos" }
-        require(obrigatorios.size <= 15) { "Máximo de 15 números" }
+        require(obrigatorios.all { it in 1..25 }) { "Numeros fora do intervalo" }
+        require(obrigatorios.distinct().size == obrigatorios.size) { "Obrigatorios repetidos" }
+        require(obrigatorios.size <= 15) { "Maximo de 15 números" }
 
         val universo = IntArray(25) { it + 1 }
         val isObrig = BooleanArray(26)
@@ -139,12 +152,12 @@ class AppSequenceTurb {
     fun plotarGrafico(tempos: List<Double>, consumos: List<Long>) {
         val chart: XYChart = XYChartBuilder()
             .width(800).height(600)
-            .title("Consumo de Memória ao longo do tempo")
+            .title("Consumo de Memoria ao longo do tempo")
             .xAxisTitle("Tempo (s)")
-            .yAxisTitle("Memória (MB)")
+            .yAxisTitle("Memoria (MB)")
             .build()
 
-        chart.addSeries("Uso de Memória", tempos, consumos)
+        chart.addSeries("Uso de Memoria", tempos, consumos)
 
         if (gcEvents.isNotEmpty()) {
             val startSeconds = startNs / 1e9

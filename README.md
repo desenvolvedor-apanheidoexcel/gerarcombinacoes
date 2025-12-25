@@ -124,6 +124,26 @@ Veja o `build.gradle.kts` do módulo `app` para versões e toolchain (Java 21).
 - Build do módulo: [app/build.gradle.kts](app/build.gradle.kts)
 - Testes: [app/src/test/kotlin/org/example/AppTest.kt](app/src/test/kotlin/org/example/AppTest.kt)
 
+## Executando com argumentos (obrigatórios)
+- Formatos aceitos: `1,2,3` ou `1 2 3` ou `1;2;3`.
+- Via propriedade de projeto `-Pobrigatorios`:
+```bat
+.\u200bgradlew.bat runApp -Pobrigatorios=1,2,3
+.gradlew.bat runSeq -Pobrigatorios=1 2 3
+.gradlew.bat runTurb -Pobrigatorios=1,2,3 -PstepInterval=5000
+```
+- Via `--args` (argumentos diretos):
+  - `App` e `AppSequence` esperam apenas a lista de obrigatórios:
+  ```bat
+  .\gradlew.bat runApp --args="1,2,3"
+  .\gradlew.bat runSeq --args="1 2 3"
+  ```
+  - `AppSequenceTurb` espera primeiro `stepInterval` e depois os obrigatórios (opcional):
+  ```bat
+  .\gradlew.bat runTurb --args="5000 1,2,3"
+  .\gradlew.bat runTurb --args="10000"   // sem obrigatórios, usa padrão 1,2
+  ```
+
 ## Dicas finais
 - Para experimentar perfis de memória, fixe heap nas tasks (ex.: `-Xms512m -Xmx512m` em `runTurb`).
 - Evite copiar o `IntArray` no `onCombination` se não for necessário; processe inline.

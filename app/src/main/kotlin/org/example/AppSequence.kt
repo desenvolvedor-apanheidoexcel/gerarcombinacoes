@@ -6,22 +6,22 @@ import org.knowm.xchart.XYChart
 
 class AppSequence {
     val greeting: String
-        get() = "Iniciando Gerador Combinações Sequence..."
+        get() = "Iniciando Gerador Combinacoes Sequence..."
 
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            AppSequence().run()
+            val obrigatorios = parseObrigatoriosFromArgs(args)
+            AppSequence().run(obrigatorios)
         }
     }
 
-    fun run() {
+    fun run(obrigatorios: Set<Int>) {
        
-        println("Iniciando monitoramento de memória (por steps)...")
+        println("Iniciando monitoramento de memoria (por steps)...")
 
         val tempos = mutableListOf<Double>()
         val consumos = mutableListOf<Long>()
-        val obrigatorios = setOf(1, 2)
 
         val inicioNs = System.nanoTime()
         val stepInterval = 10_000
@@ -35,15 +35,17 @@ class AppSequence {
             }
         }
 
-        println("Gerando combinações com obrigatórios $obrigatorios...")
+        println("Gerando combinacoes com obrigatorios $obrigatorios...")
         var total = 0L
         for (jogo in gerarCombinacoesComObrigatoriosSeq(obrigatorios, ::registrarStep)) {
             total++
         }
-        println("Gerados $total jogos que contém os números $obrigatorios.")
+        println("Gerados $total jogos que contem os numeros $obrigatorios.")
 
         plotarGrafico(tempos, consumos)
     }
+
+    
 
     fun memoriaUsadaMB(): Long {
         val runtime = Runtime.getRuntime()
@@ -55,8 +57,8 @@ class AppSequence {
         obrigatorios: Set<Int>,
         onStep: (Int) -> Unit
     ): Sequence<Set<Int>> {
-        require(obrigatorios.all { it in 1..25 }) { "Números fora do intervalo" }
-        require(obrigatorios.size <= 15) { "Máximo de 15 números" }
+        require(obrigatorios.all { it in 1..25 }) { "Numeros fora do intervalo" }
+        require(obrigatorios.size <= 15) { "Maximo de 15 numeros" }
 
         val restante = (1..25).toSet() - obrigatorios
         val faltam = 15 - obrigatorios.size
@@ -94,14 +96,26 @@ class AppSequence {
     fun plotarGrafico(tempos: List<Double>, consumos: List<Long>) {
         val chart = XYChartBuilder()
             .width(800).height(600)
-            .title("Consumo de Memória ao longo do tempo")
+            .title("Consumo de Memoria ao longo do tempo")
             .xAxisTitle("Tempo (s)")
-            .yAxisTitle("Memória (MB)")
+            .yAxisTitle("Memoria (MB)")
             .build()
 
-        chart.addSeries("Uso de Memória", tempos, consumos)
+        chart.addSeries("Uso de Memoria", tempos, consumos)
         SwingWrapper(chart).displayChart()
     }
 
 
+}
+
+fun parseObrigatoriosFromArgs(args: Array<String>): Set<Int> {
+    val raw = System.getProperty("obrigatorios") ?: args.firstOrNull()
+    if (raw.isNullOrBlank()) return setOf(1, 2)
+    val nums = raw.split(',', ' ', ';')
+        .filter { it.isNotBlank() }
+        .map { it.trim().toInt() }
+    require(nums.all { it in 1..25 }) { "Numeros fora do intervalo 1..25" }
+    val set = nums.toSet()
+    require(set.size <= 15) { "Maximo de 15 numeros obrigatorios" }
+    return set
 }
