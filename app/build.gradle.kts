@@ -55,6 +55,9 @@ tasks.register<JavaExec>("runApp") {
     classpath = sourceSets["main"].runtimeClasspath
     // Pass 'obrigatorios' via project property, e.g., -Pobrigatorios="1,2,3"
     (project.findProperty("obrigatorios") as String?)?.let { args(it) }
+    // Optional interval via -Pstart and -Pqtd
+    (project.findProperty("start") as String?)?.let { systemProperty("start", it) }
+    (project.findProperty("qtd") as String?)?.let { systemProperty("qtd", it) }
 }
 
 // Extra task to run the AppSequence.kt version without changing the default mainClass
@@ -64,6 +67,9 @@ tasks.register<JavaExec>("runSeq") {
     mainClass.set("org.example.AppSequence")
     classpath = sourceSets["main"].runtimeClasspath
     (project.findProperty("obrigatorios") as String?)?.let { args(it) }
+    // Optional interval via -Pstart and -Pqtd
+    (project.findProperty("start") as String?)?.let { systemProperty("start", it) }
+    (project.findProperty("qtd") as String?)?.let { systemProperty("qtd", it) }
 }
 
 // Extra task to run the TURB version without changing the default mainClass
@@ -79,6 +85,9 @@ tasks.register<JavaExec>("runTurb") {
     args(step)
     // Optional obrigatórios list
     (project.findProperty("obrigatorios") as String?)?.let { args(it) }
+    // Optional interval via -Pstart and -Pqtd
+    (project.findProperty("start") as String?)?.let { systemProperty("start", it) }
+    (project.findProperty("qtd") as String?)?.let { systemProperty("qtd", it) }
 }
 
 tasks.named<Test>("test") {

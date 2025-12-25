@@ -21,6 +21,7 @@ fun main(args: Array<String>) {
     val consumos = mutableListOf<Long>()
 
     val obrigatorios = parseObrigatoriosFromArgs(args)
+    val (start, qtd) = parseIntervalFromArgs(args)
 
     // Monitorar por 10 segundos (20 medições de 0,5s)
     for (i in 0..20) {
@@ -31,11 +32,29 @@ fun main(args: Array<String>) {
         if (i == 10) {
             println("Gerando combinacoes...")
             val jogos = gerarCombinacoesComObrigatorios(obrigatorios)
-            println("Gerados ${jogos.size} jogos que contem os numeros $obrigatorios.")
+            if (start != null && qtd != null && start >= 1 && qtd > 0) {
+                val fromIdx = (start - 1).coerceAtLeast(0)
+                val toIdx = (fromIdx + qtd).coerceAtMost(jogos.size)
+                val slice = if (fromIdx < toIdx) jogos.subList(fromIdx, toIdx) else emptyList()
+                var pos = start
+                for (jogo in slice) {
+                    println("Jogo #$pos: ${jogo.sorted()} ")
+                    pos++
+                }
+                println("Impressos ${slice.size} jogos do intervalo [$start..${start + qtd - 1}].")
+            } else {
+                println("Gerados ${jogos.size} jogos que contem os numeros $obrigatorios.")
+            }
         }
 
         Thread.sleep(500) // espera 0,5 segundos
     }
+
+    // Sempre imprimir o total de combinações geradas ao final
+    val n = 25 - obrigatorios.size
+    val k = 15 - obrigatorios.size
+    val totalFinal = binomial(n, k)
+    println("Total de jogos gerados: $totalFinal.")
 
     // Plotar gráfico
     plotarGrafico(tempos, consumos)
@@ -83,6 +102,8 @@ fun plotarGrafico(tempos: List<Double>, consumos: List<Long>) {
 
     SwingWrapper(chart).displayChart()
 }
+
+// Usa `binomial` definido em AppSequence.kt
 
 
 

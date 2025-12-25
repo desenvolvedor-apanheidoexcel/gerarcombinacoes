@@ -115,6 +115,8 @@ Veja o `build.gradle.kts` do módulo `app` para versões e toolchain (Java 21).
 - Console: logs de progressão e total de combinações geradas.
 - Gráfico (XChart): série “Uso de Memória” ao longo do tempo.
 - TURB: série “GC” com marcadores (diamantes) indicando eventos de coleta. No console, resumo com ação, causa, duração e heap antes/depois do último GC.
+ - Total final: ao término da execução, todos os 3 variantes imprimem o total de combinações geradas no formato “Total de jogos gerados: X”, onde X segue \(C(25 - |obrigatórios|,\; 15 - |obrigatórios|)\).
+ - Reimpressão no TURB: quando `-Pstart`/`-Pqtd` são usados, os jogos selecionados também são reimpressos no final como um pequeno resumo.
 
 ## Estrutura do Projeto
 - Variações:
@@ -143,6 +145,20 @@ Veja o `build.gradle.kts` do módulo `app` para versões e toolchain (Java 21).
   .\gradlew.bat runTurb --args="5000 1,2,3"
   .\gradlew.bat runTurb --args="10000"   // sem obrigatórios, usa padrão 1,2
   ```
+
+## Intervalo de impressão (start/qtd)
+- Todos os 3 variantes aceitam um intervalo opcional para imprimir apenas uma fatia das combinações geradas:
+  - `-Pstart`: índice inicial (1-based)
+  - `-Pqtd`: quantidade de combinações a imprimir
+- Exemplos (Windows):
+  ```bat
+  .\gradlew.bat runApp -Pobrigatorios=1,2 -Pstart=1500 -Pqtd=1000
+  .\gradlew.bat runSeq -Pobrigatorios="1 2" -Pstart=1500 -Pqtd=1000
+  .\gradlew.bat runTurb -Pobrigatorios=1,2 -Pstart=1500 -Pqtd=1000 -PstepInterval=5000
+  ```
+- Observações:
+  - Em `App` (em bloco), o intervalo é recortado após gerar a lista completa.
+  - Em `AppSequence` e `TURB`, a geração é streaming; o intervalo controla apenas o que é impresso, sem acumular tudo.
 
 ## Dicas finais
 - Para experimentar perfis de memória, fixe heap nas tasks (ex.: `-Xms512m -Xmx512m` em `runTurb`).

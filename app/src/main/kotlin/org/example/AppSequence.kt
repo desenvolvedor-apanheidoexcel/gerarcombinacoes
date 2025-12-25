@@ -12,11 +12,12 @@ class AppSequence {
         @JvmStatic
         fun main(args: Array<String>) {
             val obrigatorios = parseObrigatoriosFromArgs(args)
-            AppSequence().run(obrigatorios)
+            val (start, qtd) = parseIntervalFromArgs(args)
+            AppSequence().run(obrigatorios, start, qtd)
         }
     }
 
-    fun run(obrigatorios: Set<Int>) {
+    fun run(obrigatorios: Set<Int>, start: Int?, qtd: Int?) {
        
         println("Iniciando monitoramento de memoria (por steps)...")
 
@@ -36,12 +37,41 @@ class AppSequence {
         }
 
         println("Gerando combinacoes com obrigatorios $obrigatorios...")
-        var total = 0L
-        for (jogo in gerarCombinacoesComObrigatoriosSeq(obrigatorios, ::registrarStep)) {
-            total++
+        val seq = gerarCombinacoesComObrigatoriosSeq(obrigatorios, ::registrarStep)
+        if (start != null && qtd != null && start >= 1 && qtd > 0) {
+            val end = start + qtd - 1
+            var pos = 0L
+            var printed = 0L
+            for (jogo in seq) {
+                pos++
+                if (pos in start.toLong()..end.toLong()) {
+                    println("Jogo #$pos: ${jogo.sorted()} ")
+                    printed++
+                    if (printed >= qtd) break
+                }
+            }
+            println("Impressos $printed jogos do intervalo [$start..$end].")
+        } else {
+            var total = 0L
+            for (jogo in seq) {
+                total++
+            }
+            println("Gerados $total jogos que contem os numeros $obrigatorios.")
         }
-        println("Gerados $total jogos que contem os numeros $obrigatorios.")
 
+        // Sempre imprimir o total de combinações geradas ao final
+        run {
+            val n = 25 - obrigatorios.size
+            val k = 15 - obrigatorios.size
+            val totalFinal = binomial(n, k)
+            println("Total de jogos gerados: $totalFinal.")
+        }
+
+        if (tempos.isEmpty()) {
+            val elapsedS = (System.nanoTime() - inicioNs) / 1e9
+            tempos.add(elapsedS)
+            consumos.add(memoriaUsadaMB())
+        }
         plotarGrafico(tempos, consumos)
     }
 
@@ -118,4 +148,27 @@ fun parseObrigatoriosFromArgs(args: Array<String>): Set<Int> {
     val set = nums.toSet()
     require(set.size <= 15) { "Maximo de 15 numeros obrigatorios" }
     return set
+}
+
+fun parseIntervalFromArgs(args: Array<String>): Pair<Int?, Int?> {
+    val startProp = System.getProperty("start")
+    val qtdProp = System.getProperty("qtd")
+    val start = startProp?.toIntOrNull()
+    val qtd = qtdProp?.toIntOrNull()
+    if (start != null && qtd != null) return start to qtd
+
+    // Fallback: try to find two integers in args (supports --args="1500 1000")
+    val nums = args.mapNotNull { it.toIntOrNull() }
+    return if (nums.size >= 2) nums[0] to nums[1] else null to null
+}
+
+fun binomial(n: Int, kInput: Int): Long {
+    require(n >= 0 && kInput >= 0 && kInput <= n) { "Parâmetros inválidos para binomial" }
+    var k = kInput
+    if (k > n - k) k = n - k
+    var res = 1L
+    for (i in 1..k) {
+        res = res * (n - k + i) / i
+    }
+    return res
 }

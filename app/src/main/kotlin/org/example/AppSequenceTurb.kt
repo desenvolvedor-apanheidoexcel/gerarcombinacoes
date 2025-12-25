@@ -27,11 +27,12 @@ class AppSequenceTurb {
                 ?: args.firstOrNull()?.toIntOrNull()
                 ?: 10_000
             val obrigRaw = System.getProperty("obrigatorios") ?: args.drop(1).firstOrNull()
-            AppSequenceTurb().run(stepIntervalArg, obrigRaw)
+            val (start, qtd) = parseIntervalFromArgs(args)
+            AppSequenceTurb().run(stepIntervalArg, obrigRaw, start, qtd)
         }
     }
 
-    fun run(stepInterval: Int, obrigRaw: String?) {
+    fun run(stepInterval: Int, obrigRaw: String?, start: Int?, qtd: Int?) {
         println(greeting)
         registerGcListener()
 
@@ -51,7 +52,35 @@ class AppSequenceTurb {
         }
 
         println("Gerando combinacoes com obrigatorios ${obrigatorios.joinToString()}...")
-        val total = gerarCombinacoesComObrigatoriosInt(obrigatorios, ::registrarStep, onCombination = null)
+        var printed = 0L
+        val endIdx = if (start != null && qtd != null) start + qtd - 1 else null
+        var pos = 0L
+        val selecionados = mutableListOf<Pair<Long, IntArray>>()
+        val total = gerarCombinacoesComObrigatoriosInt(
+            obrigatorios,
+            ::registrarStep,
+            onCombination = if (start != null && qtd != null && start >= 1 && qtd > 0) {
+                { combo ->
+                    pos++
+                    if (pos in start.toLong()..endIdx!!.toLong()) {
+                        val copy = combo.copyOf()
+                        println("Jogo #$pos: ${copy.sortedArray().joinToString(prefix = "[", postfix = "]")}")
+                        selecionados.add(pos to copy)
+                        printed++
+                        // Continue generation; only suppress further prints
+                    }
+                }
+            } else null
+        )
+        if (start != null && qtd != null && start >= 1 && qtd > 0) {
+            println("Impressos $printed jogos do intervalo [$start..${start + qtd - 1}].")
+            if (selecionados.isNotEmpty()) {
+                println("\nResumo dos jogos selecionados (final):")
+                for ((p, combo) in selecionados) {
+                    println("Jogo #$p: ${combo.sortedArray().joinToString(prefix = "[", postfix = "]")}")
+                }
+            }
+        }
         println("Gerados $total jogos que contem os numeros ${obrigatorios.joinToString()}.")
 
         if (gcEvents.isNotEmpty()) {
@@ -62,6 +91,11 @@ class AppSequenceTurb {
             println("Ultimo GC: ${last.action} / ${last.cause}, duracao ${last.durationMs} ms, heap ${last.usedBeforeMB}MB -> ${last.usedAfterMB}MB")
         }
 
+        if (tempos.isEmpty()) {
+            val elapsedS = (System.nanoTime() - startNs) / 1e9
+            tempos.add(elapsedS)
+            consumos.add(memoriaHeapMB())
+        }
         plotarGrafico(tempos, consumos)
     }
 
